@@ -1,26 +1,32 @@
 #include <stdio.h>
 #include <math.h>
 
+/******  implementare:
+ * lagrangian ascent
+ * 3-optimal TSP euristic 
+ * better code organization
+ ******/
+
 #define ALFA 0.5
 #define STATES 10000
 #define N 3 /* customers */
 #define TIMES 600
 
-int earlyTime[] = {0, 0, 10, 20};
-int lateTime[] = {TIMES, 20, 35, 40};
+int earlyTime[] = {0, 0, 0, 0};
+int lateTime[] = {TIMES, TIMES, TIMES, TIMES};
 
 double c[N+1][N+1] = {
-  {INFINITY, 10, 14.142135, 10}, /* deposit to every customer */
-  {10, INFINITY, 10, 14.142135}, 
-  {14.142135, 10, INFINITY, 10},
-  {10, 14.142135, 10, INFINITY}
+  {INFINITY, 10, INFINITY, 20}, /* deposit to every customer */
+  {20, INFINITY, 10, INFINITY}, 
+  {INFINITY, 20, INFINITY, 10},
+  {10, INFINITY, 20, INFINITY}
 };
 
 int t[N+1][N+1] = {
-  {0, 10, 14.142135, 10}, /* deposit to every customer */
-  {10, 0, 10, 14.142135}, 
-  {14.142135, 10, 0, 10},
-  {10, 14.142135, 10, 0}
+  {0, 20, 0, 10}, /* deposit to every customer */
+  {10, 0, 20, 0}, 
+  {0, 10, 0, 20},
+  {20, 0, 10, 0}
 };
 
 int head[(N*N)+1];
