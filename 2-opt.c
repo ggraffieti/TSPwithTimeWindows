@@ -75,6 +75,91 @@ void arrayCopy(int array1[], int array2[], int dim) {
   }
 }
 
+void ThreeOptSwitch(int tour[], int i1, int i2, int i3, int switchIndex, int newPath[]) {
+  int j = 0; // new path index
+  for (j; j <= i1; j++) {
+    newPath[j] = tour[j];
+  }
+
+  switch (switchIndex) {
+    case 0: // A, B<-, C->, D
+      for (int y = i2; y > i1; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      for (j; j <= i3; j++) {
+        newPath[j] = tour[j];
+      }
+      break;
+
+    case 1: // A, B->, C<-; D
+      for (j; j <= i2; j++) {
+        newPath[j] = tour[j];
+      }
+      for (int y = i3; y > i2; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      break;
+
+    case 2: // A, C<-, B<-, D
+      for (int y = i3; y > i1; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      break;
+    
+    case 3: // A, C->, B->, D
+      for (int y = i2 + 1; y <= i3; y++) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      for (int y = i1 + 1; y <= i2; y++) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      break;
+
+    case 4: // A, B<-, C<-, D
+      for (int y = i2; y > i1; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      for (int y = i3; y > i2; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      break;
+
+    case 5: // A, C->, B<-, D
+      for (int y = i2 + 1; y <= i3; y++) {
+        newPath[j] = tour[y];
+        j++;
+      }
+       for (int y = i2; y > i1; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      break;
+
+    case 6: // A, C<-, B->, D
+      for (int y = i3; y > i2; y--) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      for (int y = i1 + 1; y <= i2; y++) {
+        newPath[j] = tour[y];
+        j++;
+      }
+      break;
+  }
+
+  for (j; j <= N; j++) {
+    newPath[j] = tour[j];
+  }
+
+}
+
 int main(int argc, char *argv[]) {
   printf("%s\n\n", argv[1]);
   readInput(argv[1]);
