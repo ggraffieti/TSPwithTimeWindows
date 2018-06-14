@@ -75,6 +75,15 @@ void arrayCopy(int array1[], int array2[], int dim) {
   }
 }
 
+void revertArray(int array[], int dim) {
+  int tmp = 0;
+  for (int i = 0; i < dim / 2; i++) {
+    tmp = array[dim - 1 - i];
+    array[dim - 1 - i] = array[i];
+    array[i] = tmp;
+  }
+}
+
 void ThreeOptSwitch(int tour[], int i1, int i2, int i3, int switchIndex, int newPath[]) {
   int j = 0; // new path index
   for (j; j <= i1; j++) {
@@ -163,45 +172,38 @@ void ThreeOptSwitch(int tour[], int i1, int i2, int i3, int switchIndex, int new
 int main(int argc, char *argv[]) {
   printf("%s\n\n", argv[1]);
   readInput(argv[1]);
-  int path[N+1];
+  int CurrentOptimalTour[N+1];
   for (int i = 0; i < N; i++) { // inital path, 0-1-2-3-...-N-0.
-    path[i] = i;
+    CurrentOptimalTour
+[i] = i;
   }
-  path[N] = 0;
-  double optimalCost = calculatePathCost(path);
+  CurrentOptimalTour[N] = 0;
+  double optimalCost = calculatePathCost(CurrentOptimalTour);
+  double currentOptimalCost = optimalCost;
   int optimalTour[N+1];
-  arrayCopy(path, optimalTour, N+1);
+  int tmpTour[N+1];
+  arrayCopy(CurrentOptimalTour, optimalTour, N+1);
   int improvement = 1;
-  int newTour1[N+1];
-  int newTour2[N+1];
   while (improvement == 1) {
     improvement = 0;
-    for (int i = 1; i < N - 1; i++) {
-      for (int j = i+1; j < N; j++) {
-        int dec = 0;
-        for (int h = 0; h < N+1; h++) {
-          if (h < i || h > j) {
-            newTour1[h] = optimalTour[h];
-          } else {
-            newTour1[h] = optimalTour[j - dec];
-            dec++;
+    for (int i = 0; i < N - 2; i++) { // i1
+      for (int j = i+1; j < N - 1; j++) { // i2
+        for (int t = j+1; t < N; t++) { // i3
+          for (int h = 0; h < 7; h++) { // switchIndex
+            ThreeOptSwitch(optimalTour, i, j, t, h, tmpTour);
+            if (calculatePathCost(tmpTour) < currentOptimalCost) {
+              improvement = 1;
+              currentOptimalCost = calculatePathCost(tmpTour);
+              arrayCopy(tmpTour, CurrentOptimalTour, N+1);
+            }
+            revertArray(tmpTour, N+1);
+            if (calculatePathCost(tmpTour) < currentOptimalCost) {
+              improvement = 1;
+              currentOptimalCost = calculatePathCost(tmpTour);
+              arrayCopy(tmpTour, CurrentOptimalTour, N+1);
+            }
           }
-        }
-
-        if (calculatePathCost(newTour1) < optimalCost) {
-          improvement = 1;
-          arrayCopy(newTour1, optimalTour, N+1);
-          optimalCost = calculatePathCost(newTour1);
-        }
-
-        for (int g = 0; g < N+1; g++) {
-          newTour2[g] = newTour1[N - g];
-        }
-
-        if (calculatePathCost(newTour2) < optimalCost) {
-          improvement = 1;
-          arrayCopy(newTour2, optimalTour, N+1);
-          optimalCost = calculatePathCost(newTour2);
+          // mantain current until the end, or substitute now?
         }
       }
     }
