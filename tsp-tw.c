@@ -11,7 +11,7 @@
 #define MAX_TIME 5000
 #define MAX_CUSTOMERS 50 // customers + origin
 #define MAX_DELTA  30
-#define MAX_ASCENT_LOOP 200
+#define MAX_ASCENT_LOOP 100
 
 int N = 0; // customers ONLY
 
