@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 /******  implementare:
  * lagrangian ascent
@@ -325,7 +326,7 @@ int main(int argc, char *argv[]) {
   double LB = -INFINITY;
   int isPathComplete = 0;
 
-  while (w < MAX_ASCENT_LOOP && !isPathComplete) {
+  while (w <= MAX_ASCENT_LOOP && !isPathComplete) {
     for (int i = 0; i < N+1; i++) { // set lamdas to 0.
       lamda[i] = 0;
       occurrence[i] = 0;
@@ -350,6 +351,30 @@ int main(int argc, char *argv[]) {
       }
     }
     getPathFromState(Pi[lbState], bestPath, N+1, 0); // get the best path in an array
+
+    if (w == 1 || w == MAX_ASCENT_LOOP) {
+      char filename[30] = "results/dp";
+      if (w == 1){
+        strcat(filename, "Init");
+        FILE *f = fopen("results/points", "ab+");
+        for (int j = 0; j < N+1; j++) {
+          fprintf(f, "%d %d %d\n", j, x[j], y[j]);
+        }
+        fclose(f);
+      } else {
+        strcat(filename, "End");
+      }
+      FILE *f = fopen(filename, "ab+");
+      for (int j = 0; j < N; j++) {
+        printf("%d, ", bestPath[j]);
+        fprintf(f, "%d %d %d %d %d\n", bestPath[j], x[bestPath[j]], y[bestPath[j]], 
+          x[bestPath[j+1]], y[bestPath[j+1]]);
+      }
+      fprintf(f, "%d %d %d %d %d\n", bestPath[N], x[bestPath[N]], y[bestPath[N]], 
+          x[0], y[0]);
+      fclose(f);
+    }
+    
     for (int i = 0; i < N+1; i++) {
       occurrence[bestPath[i]]++;
     }
