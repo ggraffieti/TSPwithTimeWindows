@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #define MAX_SIZE 50
 #define ALFA 0.5
-#define STATES 10000
-#define MAX_TIMES 1000
-#define MAX_ITER 20
+#define MAX_DELAY 1000
 
 int N = 0; /* customers + deposit */
+int x[MAX_SIZE];
+int y[MAX_SIZE];
 
 int earlyTime[MAX_SIZE];
 int lateTime[MAX_SIZE];
@@ -15,10 +16,11 @@ int lateTime[MAX_SIZE];
 int c[MAX_SIZE][MAX_SIZE];
 int t[MAX_SIZE][MAX_SIZE];
 
+int tours[MAX_DELAY][MAX_SIZE];
+double roadTours[MAX_DELAY] = {INFINITY};
+
 void readInput(char fileName[]) {
   FILE* file = fopen (fileName, "r");
-  int x[MAX_SIZE];
-  int y[MAX_SIZE];
   int service[MAX_SIZE];
   int tmp = 0;
 
@@ -33,19 +35,15 @@ void readInput(char fileName[]) {
     fscanf (file, "%d", &earlyTime[i]);
     fscanf (file, "%d", &lateTime[i]);
     fscanf (file, "%d", &service[i]);
-    //printf("x = %d, y = %d, a = %d, b = %d, service = %d\n", x[i], y[i], earlyTime[i], lateTime[i], service[i]);
-
   }
   fclose (file);    
 
-  printf("\n\n** DISTANCES\n\n");
   int dist = 0;
   for (int j = 0; j < N; j++) {
     for (int u = 0; u < N; u++) {
       dist = sqrt(pow(x[j] - x[u], 2) + pow(y[j] - y[u], 2));
       c[j][u] = dist;
       t[j][u] = dist + service[u];
-      printf("%d - %d -> %d\n", j, u, c[j][u]);
     }
   } 
 }
@@ -63,10 +61,18 @@ double calculatePathCost(int path[]) {
   int time = 0;
   double f = 0.0;
   for (int i = 0; i < N; i++) {
-    time = max(earlyTime[i+1], time + t[path[i]][path[i+1]]);
+    time = max(earlyTime[path[i+1]], time + t[path[i]][path[i+1]]);
     f = f + c[path[i]][path[i+1]] + calculateDelayCost(time, path[i+1]);
   } 
   return f;
+}
+
+double calculatePathRoadCost(int path[]) {
+  int cost = 0.0;
+  for (int i = 0; i < N; i++) {
+    cost += c[path[i]][path[i+1]];
+  }
+  return cost;
 }
 
 void arrayCopy(int array1[], int array2[], int dim) {
@@ -166,7 +172,20 @@ void ThreeOptSwitch(int tour[], int i1, int i2, int i3, int switchIndex, int new
   for (j; j <= N; j++) {
     newPath[j] = tour[j];
   }
+}
 
+void checkDominance() {
+  double minCost = INFINITY;
+  for (int i = 0; i < MAX_DELAY; i++) {
+    if (roadTours
+  [i] >= minCost) {
+      roadTours
+    [i] = INFINITY;
+    } else {
+      minCost = roadTours
+    [i];
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -174,8 +193,7 @@ int main(int argc, char *argv[]) {
   readInput(argv[1]);
   int CurrentOptimalTour[N+1];
   for (int i = 0; i < N; i++) { // inital path, 0-1-2-3-...-N-0.
-    CurrentOptimalTour
-[i] = i;
+    CurrentOptimalTour[i] = i;
   }
   CurrentOptimalTour[N] = 0;
   double optimalCost = calculatePathCost(CurrentOptimalTour);
@@ -212,10 +230,81 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  printf("optimal tour = ");
-  for (int i = 0; i < N+1; i++) {
-    printf("%d, ", optimalTour[i]);
+  double thresholdCost = 1.1 * optimalCost;
+  double tourCost = 0;
+  double roadCost = 0;
+  int tourDelay = 0;
+  for (int i = 0; i < MAX_DELAY; i++) {
+    roadTours[i] = INFINITY;
   }
 
-  printf("\nCost = %lf\n", optimalCost);
+  improvement = 1;
+  while (improvement == 1) {
+    improvement = 0;
+    for (int i = 0; i < N - 2; i++) { // i1
+      for (int j = i+1; j < N - 1; j++) { // i2
+        for (int t = j+1; t < N; t++) { // i3
+          for (int h = 0; h < 7; h++) { // switchIndex
+            ThreeOptSwitch(optimalTour, i, j, t, h, tmpTour);
+            tourCost = calculatePathCost(tmpTour);
+            if (tourCost < thresholdCost) {
+              roadCost = calculatePathRoadCost(tmpTour);
+              tourDelay = (tourCost - roadCost) * (1/ALFA);
+              if (roadTours[tourDelay] > roadCost) {
+                improvement = 1;
+                roadTours[tourDelay] = roadCost;
+                arrayCopy(tmpTour, tours[tourDelay], N+1);
+                if (currentOptimalCost < tourCost) {
+                  currentOptimalCost = tourCost;
+                  arrayCopy(tmpTour, CurrentOptimalTour, N+1);
+                }
+              } 
+            }
+            revertArray(tmpTour, N+1);
+            tourCost = calculatePathCost(tmpTour);
+            if (tourCost < thresholdCost) {
+              roadCost = calculatePathRoadCost(tmpTour);
+              tourDelay = (tourCost - roadCost) * (1/ALFA);
+              if (roadTours[tourDelay] > roadCost) {
+                improvement = 1;
+                roadTours[tourDelay] = roadCost;
+                arrayCopy(tmpTour, tours[tourDelay], N+1);
+                if (currentOptimalCost < tourCost) {
+                  currentOptimalCost = tourCost;
+                  arrayCopy(tmpTour, CurrentOptimalTour, N+1);
+                }
+              } 
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (improvement == 1) {
+    optimalCost = currentOptimalCost;
+    arrayCopy(CurrentOptimalTour, optimalTour, N+1);
+  }
+  checkDominance();
+
+  for (int i = 0; i < MAX_DELAY; i++) {
+    if (roadTours[i] < INFINITY) {
+      printf("*******\nTour = ");
+      char fileName[20] = "results/tsp";
+      char buff[12];
+      sprintf(buff, "%d", i);
+      strcat(fileName, buff);
+      FILE *f = fopen(fileName, "ab+");
+      for (int j = 0; j < N; j++) {
+        printf("%d, ", tours[i][j]);
+        fprintf(f, "%d %d %d %d %d\n", tours[i][j], x[tours[i][j]], y[tours[i][j]], 
+          x[tours[i][j+1]], y[tours[i][j+1]]);
+      }
+      fclose(f);
+
+      printf("\nCost = %lf (road + %lf * delay)\n", roadTours[i] + (ALFA * i), ALFA);
+      printf("Road = %lf\n", roadTours[i]);
+      printf("Delay = %d\n", i);
+    }
+  }
 }
