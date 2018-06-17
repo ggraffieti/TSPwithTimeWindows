@@ -203,7 +203,10 @@ int main(int argc, char *argv[]) {
               arrayCopy(tmpTour, CurrentOptimalTour, N+1);
             }
           }
-          // mantain current until the end, or substitute now?
+          if (improvement == 1 && currentOptimalCost < optimalCost) {
+            optimalCost = currentOptimalCost;
+            arrayCopy(CurrentOptimalTour, optimalTour, N+1);
+          }
         }
       }
     }
@@ -215,6 +218,4 @@ int main(int argc, char *argv[]) {
   }
 
   printf("\nCost = %lf\n", optimalCost);
-
-
 }
