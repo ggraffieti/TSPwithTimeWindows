@@ -2,17 +2,12 @@
 #include <math.h>
 #include <string.h>
 
-/******  implementare:
- * lagrangian ascent
- * better code organization
- ******/
-
 #define ALFA 0.5
-#define MAX_STATES 100000
+#define MAX_STATES 1000000
 #define MAX_TIME 5000
 #define MAX_CUSTOMERS 50 // customers + origin
-#define MAX_DELTA  30
-#define MAX_ASCENT_LOOP 200
+#define MAX_DELTA  10
+#define MAX_ASCENT_LOOP 400
 
 int N = 0; // customers ONLY
 
@@ -194,7 +189,7 @@ void printStates(int k) {
   } else {
     for (int i = getHead(k, 0); i < getHead(k, 1); i++) {
       printf("%d\n", i);
-      printf("F = %lf, T = %d, Pi = %d, G = %lf, Gamma = %d\n", realF[i], stateTime[i], Pi[i], G[i], Gamma[i]);
+      printf("F = %lf, T = %d, realF = %lf, Pi = %d, G = %lf, Gamma = %d\n", F[i], stateTime[i], realF[i], Pi[i], G[i], Gamma[i]);
       printPath(i, 0);
       printf("\n");
     }
@@ -347,8 +342,11 @@ int main(int argc, char *argv[]) {
       delta++;
       if (delta >= MAX_DELTA) {
         delta = 0;
-        alpha = alpha / 2;
+        alpha = alpha * 0.75;
       }
+    }
+    if (w % 10 == 0) {
+      printf("buond w = %d, bound = %lf\n", w, LB);
     }
     getPathFromState(Pi[lbState], bestPath, N+1, 0); // get the best path in an array
 
@@ -396,7 +394,7 @@ int main(int argc, char *argv[]) {
       //now refresh c'_ij
       for (int i = 0; i < N+1; i++) {
         for(int j = 0; j < N+1; j++) {
-          _c[i][j] = _c[i][j] -(0.5*lamda[i]) -(0.5*lamda[j]);
+          _c[i][j] = c[i][j] -(0.5*lamda[i]) -(0.5*lamda[j]);
         }
       }
     } else {
@@ -405,5 +403,5 @@ int main(int argc, char *argv[]) {
     w++;
   }
   printf("\n");
-  printStates(N+1);
+  //printStates(N+1);
 }
