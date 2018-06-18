@@ -12,7 +12,7 @@
 #define MAX_TIME 5000
 #define MAX_CUSTOMERS 50 // customers + origin
 #define MAX_DELTA  30
-#define MAX_ASCENT_LOOP 100
+#define MAX_ASCENT_LOOP 200
 
 int N = 0; // customers ONLY
 
@@ -366,7 +366,6 @@ int main(int argc, char *argv[]) {
       }
       FILE *f = fopen(filename, "ab+");
       for (int j = 0; j < N; j++) {
-        printf("%d, ", bestPath[j]);
         fprintf(f, "%d %d %d %d %d\n", bestPath[j], x[bestPath[j]], y[bestPath[j]], 
           x[bestPath[j+1]], y[bestPath[j+1]]);
       }
